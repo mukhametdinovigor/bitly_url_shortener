@@ -5,8 +5,6 @@ from urllib.parse import urlparse
 import requests
 from dotenv import load_dotenv
 
-load_dotenv()
-
 
 def shorten_link(token, url):
     headers = {'Authorization': token}
@@ -26,23 +24,23 @@ def count_clicks(token, link):
 
 
 def main():
-    BITLY_TOKEN = os.getenv("BITLY_TOKEN")
-    headers = {'Authorization': BITLY_TOKEN}
+    load_dotenv()
+    bitly_token = os.getenv("BITLY_TOKEN")
+    headers = {'Authorization': bitly_token}
     parser = argparse.ArgumentParser(
         description='Input link')
     parser.add_argument('link', help='bitly link')
     args = parser.parse_args()
     user_url = args.link
     link_without_https = f'{urlparse(user_url).netloc}{urlparse(user_url).path}'
-    if requests.get(f'https://api-ssl.bitly.com/v4/bitlinks/{link_without_https}/clicks/summary', headers=headers).ok:
-        try:
-            clicks_count = count_clicks(BITLY_TOKEN, link_without_https)
-            print(f'Всего переходов по ссылке - {clicks_count}')
-        except requests.exceptions.HTTPError:
-            print('Произошла ошибка. Вы ввели неверную ссылку.')
+
+    if requests.get(f'https://api-ssl.bitly.com/v4/bitlinks/{link_without_https}/clicks/summary',
+                    headers=headers).ok:
+        clicks_count = count_clicks(bitly_token, link_without_https)
+        print(f'Всего переходов по ссылке - {clicks_count}')
     else:
         try:
-            bitlink = shorten_link(BITLY_TOKEN, user_url)
+            bitlink = shorten_link(bitly_token, user_url)
             print(f'Битлинк - {bitlink}')
         except requests.exceptions.HTTPError:
             print('Произошла ошибка. Вы ввели неверную ссылку.')
